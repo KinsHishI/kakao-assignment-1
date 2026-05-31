@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Todo</title>
+    <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body>
+    <main class="app" aria-label="Todo 앱">
+        <header class="header">
+            <h1 class="title">Todo</h1>
+            <p class="subtitle">오늘 할 일을 깔끔하게 정리해요.</p>
+        </header>
+
+        <section class="card" aria-label="Todo 입력">
+            <form id="todoForm" class="todo-form" autocomplete="off">
+                <label class="sr-only" for="todoInput">할 일 입력</label>
+                <input id="todoInput" class="todo-input" type="text" placeholder="할 일을 입력하세요" maxlength="80" />
+                <button class="btn btn-primary" type="submit">추가</button>
+            </form>
+
+            <!-- 입력 검증/안내 메시지: 스크린 리더가 읽을 수 있도록 live region으로 구성 -->
+            <p id="helperText" class="helper" role="status" aria-live="polite"></p>
+        </section>
+
+        <section class="card" aria-label="Todo 목록">
+            <div class="list-header">
+                <h2 class="list-title">목록</h2>
+                <p id="counterText" class="counter" aria-label="카운터"></p>
+            </div>
+
+            <ul id="todoList" class="todo-list" aria-label="Todo 리스트"></ul>
+        </section>
+
+        <footer class="footer">
+            <small>kakaoTechCampus Assignment • Vanilla JS Todo</small>
+        </footer>
+    </main>
+
+    <script src="./app.js"></script>
+</body>
+
+</html>
