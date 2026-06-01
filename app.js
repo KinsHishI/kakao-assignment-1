@@ -8,6 +8,41 @@ const helperText = document.getElementById("helperText");
 const counterText = document.getElementById("counterText");
 const todoList = document.getElementById("todoList");
 
+const STORAGE_KEY = "kakao-assignment.todos.v1";
+
+function saveTodosToStorage() {
+    try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+    } catch (error) {
+        console.warn("Failed to save todos to localStorage", error);
+    }
+}
+
+function loadTodosFromStorage() {
+    try {
+        const raw = window.localStorage.getItem(STORAGE_KEY);
+        if (!raw) return [];
+
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [];
+
+        return parsed
+            .filter((item) => item && typeof item === "object")
+            .map((item) => ({
+                id: String(item.id ?? createTodoId()),
+                text: String(item.text ?? ""),
+                isCompleted: Boolean(item.isCompleted),
+                createdAt: Number(item.createdAt ?? Date.now()),
+                dateKey:
+                    typeof item.dateKey === "string" ? item.dateKey : selectedDateKey,
+            }))
+            .filter((todo) => todo.text.trim().length > 0);
+    } catch (error) {
+        console.warn("Failed to load todos from localStorage", error);
+        return [];
+    }
+}
+
 // 상태 필터 탭 컨테이너(2번 요구사항)
 const filterTabContainer = document.querySelector(".filters");
 
@@ -169,6 +204,9 @@ function addTodo(rawText) {
     };
 
     todos = [newTodo, ...todos];
+
+    saveTodosToStorage();
+
     setHelperMessage("추가했어요.");
 
     // 현재 필터 상태를 유지한 채로 목록 갱신
@@ -181,6 +219,9 @@ function addTodo(rawText) {
 
 function deleteTodo(todoId) {
     todos = todos.filter((todo) => todo.id !== todoId);
+
+    saveTodosToStorage();
+
     setHelperMessage("삭제했어요.");
     renderTodoList();
 }
@@ -189,6 +230,9 @@ function toggleTodoCompleted(todoId) {
     todos = todos.map((todo) =>
         todo.id === todoId ? { ...todo, isCompleted: !todo.isCompleted } : todo
     );
+
+    saveTodosToStorage();
+
     setHelperMessage("상태를 변경했어요.");
     renderTodoList();
 }
@@ -210,6 +254,8 @@ function editTodoText(todoId) {
     todos = todos.map((todo) =>
         todo.id === todoId ? { ...todo, text: editedText } : todo
     );
+
+    saveTodosToStorage();
 
     setHelperMessage("수정했어요.");
     renderTodoList();
@@ -278,7 +324,8 @@ todoList.addEventListener("click", (event) => {
     }
 });
 
-// 초기 렌더
+todos = loadTodosFromStorage();
+
 setActiveFilterTab(currentFilter);
 renderSelectedDate();
 renderTodoList();
