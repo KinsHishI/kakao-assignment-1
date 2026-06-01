@@ -11,8 +11,16 @@ const todoList = document.getElementById("todoList");
 // 상태 필터 탭 컨테이너(2번 요구사항)
 const filterTabContainer = document.querySelector(".filters");
 
+// 일간 뷰(3번 요구사항) DOM 참조
+const currentDateText = document.getElementById("currentDateText");
+const prevDayBtn = document.getElementById("prevDayBtn");
+const nextDayBtn = document.getElementById("nextDayBtn");
+
 // --- 앱 상태 ---
 let todos = [];
+
+// 일간 뷰에서 현재 선택된 날짜(로컬 기준)를 YYYY-MM-DD 형태로 관리
+let selectedDateKey = formatDateKey(new Date());
 
 // 현재 선택된 필터(탭 전환 후 새 Todo를 추가해도 유지되도록 상태로 관리)
 // - all: 전체
@@ -46,17 +54,48 @@ function updateCounter() {
     counterText.textContent = `전체 ${totalCount} · 진행 ${activeCount} · 완료 ${completedCount}`;
 }
 
+function formatDateKey(date) {
+    // 로컬 기준 'YYYY-MM-DD'
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+}
+
+function addDaysToDateKey(dateKey, diff) {
+    const [y, m, d] = dateKey.split("-").map(Number);
+    const date = new Date(y, m - 1, d);
+    date.setDate(date.getDate() + diff);
+    return formatDateKey(date);
+}
+
+function renderSelectedDate() {
+    if (!currentDateText) return;
+
+    // 표시용 포맷(간단): YYYY.MM.DD
+    currentDateText.textContent = selectedDateKey.replaceAll("-", ".");
+}
+
+function getDayTodos() {
+    // 선택된 날짜의 Todo만 추린다.
+    // (이 변경은 3번 요구사항 때문에 필요: 기존 getFilteredTodos가 '전체 todos' 기준이라 날짜 조건을 먼저 적용해야 함)
+    return todos.filter((todo) => (todo.dateKey || "") === selectedDateKey);
+}
+
 function getFilteredTodos() {
     // currentFilter에 따라 화면에 보여줄 목록만 골라낸다.
+    // (3번 요구사항 추가) 먼저 날짜 필터링을 적용한 뒤, 상태 필터를 적용한다.
+    const dayTodos = getDayTodos();
+
     if (currentFilter === "active") {
-        return todos.filter((todo) => !todo.isCompleted);
+        return dayTodos.filter((todo) => !todo.isCompleted);
     }
 
     if (currentFilter === "completed") {
-        return todos.filter((todo) => todo.isCompleted);
+        return dayTodos.filter((todo) => todo.isCompleted);
     }
 
-    return todos;
+    return dayTodos;
 }
 
 function setActiveFilterTab(nextFilter) {
@@ -125,6 +164,8 @@ function addTodo(rawText) {
         text,
         isCompleted: false,
         createdAt: Date.now(),
+        // 3번 요구사항: 생성 시점에 '현재 선택된 날짜'를 저장
+        dateKey: selectedDateKey,
     };
 
     todos = [newTodo, ...todos];
@@ -194,6 +235,23 @@ if (filterTabContainer) {
     });
 }
 
+// 일간 뷰: 이전/다음 날짜 이동
+if (prevDayBtn) {
+    prevDayBtn.addEventListener("click", () => {
+        selectedDateKey = addDaysToDateKey(selectedDateKey, -1);
+        renderSelectedDate();
+        renderTodoList();
+    });
+}
+
+if (nextDayBtn) {
+    nextDayBtn.addEventListener("click", () => {
+        selectedDateKey = addDaysToDateKey(selectedDateKey, 1);
+        renderSelectedDate();
+        renderTodoList();
+    });
+}
+
 // 버튼이 동적으로 생성되므로, 목록(ul)에 이벤트를 위임한다.
 todoList.addEventListener("click", (event) => {
     const actionButton = event.target.closest("button[data-action]");
@@ -222,5 +280,6 @@ todoList.addEventListener("click", (event) => {
 
 // 초기 렌더
 setActiveFilterTab(currentFilter);
+renderSelectedDate();
 renderTodoList();
 setHelperMessage("할 일을 추가해 보세요.");
