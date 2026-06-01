@@ -8,8 +8,17 @@ const helperText = document.getElementById("helperText");
 const counterText = document.getElementById("counterText");
 const todoList = document.getElementById("todoList");
 
+// 상태 필터 탭 컨테이너(2번 요구사항)
+const filterTabContainer = document.querySelector(".filters");
+
 // --- 앱 상태 ---
 let todos = [];
+
+// 현재 선택된 필터(탭 전환 후 새 Todo를 추가해도 유지되도록 상태로 관리)
+// - all: 전체
+// - active: 진행 중
+// - completed: 완료
+let currentFilter = "all";
 
 // --- 유틸 ---
 function createTodoId() {
@@ -29,6 +38,7 @@ function normalizeTodoText(rawText) {
 }
 
 function updateCounter() {
+    // 카운터는 전체 상태 기준으로 표시(필터와 무관)
     const totalCount = todos.length;
     const completedCount = todos.filter((todo) => todo.isCompleted).length;
     const activeCount = totalCount - completedCount;
@@ -36,10 +46,39 @@ function updateCounter() {
     counterText.textContent = `전체 ${totalCount} · 진행 ${activeCount} · 완료 ${completedCount}`;
 }
 
+function getFilteredTodos() {
+    // currentFilter에 따라 화면에 보여줄 목록만 골라낸다.
+    if (currentFilter === "active") {
+        return todos.filter((todo) => !todo.isCompleted);
+    }
+
+    if (currentFilter === "completed") {
+        return todos.filter((todo) => todo.isCompleted);
+    }
+
+    return todos;
+}
+
+function setActiveFilterTab(nextFilter) {
+    // 필터 상태 변경 + 탭 스타일(활성) 갱신
+    currentFilter = nextFilter;
+
+    if (!filterTabContainer) return;
+
+    const tabs = filterTabContainer.querySelectorAll("button[data-filter]");
+    tabs.forEach((tab) => {
+        const isActive = tab.dataset.filter === currentFilter;
+        tab.classList.toggle("is-active", isActive);
+        tab.setAttribute("aria-pressed", String(isActive));
+    });
+}
+
 // --- 렌더링 ---
 function renderTodoList() {
-    // 상태(todos)를 기반으로 목록을 다시 그린다.
-    todoList.innerHTML = todos
+    // 상태(todos) + 필터(currentFilter)를 기반으로 목록을 다시 그린다.
+    const visibleTodos = getFilteredTodos();
+
+    todoList.innerHTML = visibleTodos
         .map((todo) => {
             const completedClass = todo.isCompleted ? "is-completed" : "";
 
@@ -90,6 +129,8 @@ function addTodo(rawText) {
 
     todos = [newTodo, ...todos];
     setHelperMessage("추가했어요.");
+
+    // 현재 필터 상태를 유지한 채로 목록 갱신
     renderTodoList();
 
     // UX: 입력창 비우고 focus 유지
@@ -141,6 +182,18 @@ function handleTodoFormSubmit(event) {
 
 todoForm.addEventListener("submit", handleTodoFormSubmit);
 
+// 상태 필터 탭 클릭 처리(이벤트 위임)
+if (filterTabContainer) {
+    filterTabContainer.addEventListener("click", (event) => {
+        const tabButton = event.target.closest("button[data-filter]");
+        if (!tabButton) return;
+
+        const nextFilter = tabButton.dataset.filter;
+        setActiveFilterTab(nextFilter);
+        renderTodoList();
+    });
+}
+
 // 버튼이 동적으로 생성되므로, 목록(ul)에 이벤트를 위임한다.
 todoList.addEventListener("click", (event) => {
     const actionButton = event.target.closest("button[data-action]");
@@ -168,5 +221,6 @@ todoList.addEventListener("click", (event) => {
 });
 
 // 초기 렌더
+setActiveFilterTab(currentFilter);
 renderTodoList();
 setHelperMessage("할 일을 추가해 보세요.");

@@ -164,6 +164,34 @@ body {
     color: var(--muted);
 }
 
+/* 상태별 필터 탭 */
+.filters {
+    display: flex;
+    gap: 8px;
+    padding: 0 2px 12px;
+    flex-wrap: wrap;
+}
+
+.filter-tab {
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.02);
+    color: rgba(233, 233, 242, 0.88);
+    padding: 8px 10px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 120ms ease, border-color 120ms ease;
+}
+
+.filter-tab:hover {
+    border-color: rgba(233, 233, 242, 0.22);
+}
+
+.filter-tab.is-active {
+    background: rgba(103, 43, 224, 0.22);
+    border-color: rgba(103, 43, 224, 0.6);
+    color: var(--text);
+}
+
 .todo-list {
     list-style: none;
     padding: 0;
@@ -215,10 +243,6 @@ body {
     text-align: center;
     color: var(--muted);
     padding: 8px 0 0;
-}
-
-.brand {
-    color: var(--brand);
 }
 
 @media (max-width: 480px) {
