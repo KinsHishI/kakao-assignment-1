@@ -7,6 +7,10 @@ const todoInput = document.getElementById("todoInput");
 const helperText = document.getElementById("helperText");
 const counterText = document.getElementById("counterText");
 const todoList = document.getElementById("todoList");
+const weekRangeText = document.getElementById("weekRangeText");
+const prevWeekBtn = document.getElementById("prevWeekBtn");
+const nextWeekBtn = document.getElementById("nextWeekBtn");
+const weekDaysContainer = document.getElementById("weekDays");
 
 const STORAGE_KEY = "kakao-assignment.todos.v1";
 
@@ -44,16 +48,12 @@ function loadTodosFromStorage() {
 // 상태 필터 탭 컨테이너(2번 요구사항)
 const filterTabContainer = document.querySelector(".filters");
 
-// 일간 뷰(3번 요구사항) DOM 참조
-const currentDateText = document.getElementById("currentDateText");
-const prevDayBtn = document.getElementById("prevDayBtn");
-const nextDayBtn = document.getElementById("nextDayBtn");
-
 // --- 앱 상태 ---
 let todos = [];
 
-// 일간 뷰에서 현재 선택된 날짜(로컬 기준)를 YYYY-MM-DD 형태로 관리
+// 현재 선택된 날짜(로컬 기준)를 YYYY-MM-DD 형태로 관리
 let selectedDateKey = formatDateKey(new Date());
+let currentWeekStartKey = getWeekStartDateKey(new Date());
 
 // 현재 선택된 필터(탭 전환 후 새 Todo를 추가해도 유지되도록 상태로 관리)
 // - all: 전체
@@ -95,18 +95,71 @@ function formatDateKey(date) {
     return `${y}-${m}-${d}`;
 }
 
-function addDaysToDateKey(dateKey, diff) {
+function parseDateKey(dateKey) {
     const [y, m, d] = dateKey.split("-").map(Number);
-    const date = new Date(y, m - 1, d);
+    return new Date(y, m - 1, d);
+}
+
+function addDaysToDateKey(dateKey, diff) {
+    const date = parseDateKey(dateKey);
     date.setDate(date.getDate() + diff);
     return formatDateKey(date);
 }
 
-function renderSelectedDate() {
-    if (!currentDateText) return;
+function getWeekStartDateKey(date) {
+    const target = new Date(date);
+    const day = target.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    target.setDate(target.getDate() + diff);
+    return formatDateKey(target);
+}
 
-    // 표시용 포맷(간단): YYYY.MM.DD
-    currentDateText.textContent = selectedDateKey.replaceAll("-", ".");
+function getWeekDates(startDateKey) {
+    return Array.from({ length: 7 }, (_, index) => addDaysToDateKey(startDateKey, index));
+}
+
+function formatWeekRange(startDateKey) {
+    const endDateKey = addDaysToDateKey(startDateKey, 6);
+    return `${startDateKey.replaceAll("-", ".")} - ${endDateKey.replaceAll("-", ".")}`;
+}
+
+function getWeekTodoCount(dateKey) {
+    return todos.filter((todo) => (todo.dateKey || "") === dateKey).length;
+}
+
+function renderWeekView() {
+    if (weekRangeText) {
+        weekRangeText.textContent = formatWeekRange(currentWeekStartKey);
+    }
+
+    if (!weekDaysContainer) return;
+
+    const todayKey = formatDateKey(new Date());
+    const weekDates = getWeekDates(currentWeekStartKey);
+    const weekDayLabels = ["월", "화", "수", "목", "금", "토", "일"];
+
+    weekDaysContainer.innerHTML = weekDates
+        .map((dateKey, index) => {
+            const isSelected = dateKey === selectedDateKey;
+            const isToday = dateKey === todayKey;
+            const dateObj = parseDateKey(dateKey);
+            const dayNumber = dateObj.getDate();
+            const count = getWeekTodoCount(dateKey);
+
+            return `
+        <button
+          type="button"
+          class="week-day ${isSelected ? "is-selected" : ""} ${isToday ? "is-today" : ""}"
+          data-date-key="${dateKey}"
+          aria-pressed="${String(isSelected)}"
+        >
+          <span class="week-day-label">${weekDayLabels[index]}</span>
+          <span class="week-day-number">${dayNumber}</span>
+          <span class="week-day-count">${count}개</span>
+        </button>
+      `;
+        })
+        .join("");
 }
 
 function getDayTodos() {
@@ -226,6 +279,7 @@ function addTodo(rawText) {
     setHelperMessage("추가했어요.");
 
     // 현재 필터 상태를 유지한 채로 목록 갱신
+    renderWeekView();
     renderTodoList();
 
     // UX: 입력창 비우고 focus 유지
@@ -239,6 +293,7 @@ function deleteTodo(todoId) {
     saveTodosToStorage();
 
     setHelperMessage("삭제했어요.");
+    renderWeekView();
     renderTodoList();
 }
 
@@ -250,6 +305,7 @@ function toggleTodoCompleted(todoId) {
     saveTodosToStorage();
 
     setHelperMessage("상태를 변경했어요.");
+    renderWeekView();
     renderTodoList();
 }
 
@@ -274,6 +330,7 @@ function editTodoText(todoId) {
     saveTodosToStorage();
 
     setHelperMessage("수정했어요.");
+    renderWeekView();
     renderTodoList();
 }
 
@@ -297,19 +354,31 @@ if (filterTabContainer) {
     });
 }
 
-// 일간 뷰: 이전/다음 날짜 이동
-if (prevDayBtn) {
-    prevDayBtn.addEventListener("click", () => {
-        selectedDateKey = addDaysToDateKey(selectedDateKey, -1);
-        renderSelectedDate();
+if (prevWeekBtn) {
+    prevWeekBtn.addEventListener("click", () => {
+        currentWeekStartKey = addDaysToDateKey(currentWeekStartKey, -7);
+        selectedDateKey = currentWeekStartKey;
+        renderWeekView();
         renderTodoList();
     });
 }
 
-if (nextDayBtn) {
-    nextDayBtn.addEventListener("click", () => {
-        selectedDateKey = addDaysToDateKey(selectedDateKey, 1);
-        renderSelectedDate();
+if (nextWeekBtn) {
+    nextWeekBtn.addEventListener("click", () => {
+        currentWeekStartKey = addDaysToDateKey(currentWeekStartKey, 7);
+        selectedDateKey = currentWeekStartKey;
+        renderWeekView();
+        renderTodoList();
+    });
+}
+
+if (weekDaysContainer) {
+    weekDaysContainer.addEventListener("click", (event) => {
+        const dayButton = event.target.closest("button[data-date-key]");
+        if (!dayButton) return;
+
+        selectedDateKey = dayButton.dataset.dateKey;
+        renderWeekView();
         renderTodoList();
     });
 }
@@ -343,6 +412,6 @@ todoList.addEventListener("click", (event) => {
 todos = loadTodosFromStorage();
 
 setActiveFilterTab(currentFilter);
-renderSelectedDate();
+renderWeekView();
 renderTodoList();
 setHelperMessage("할 일을 추가해 보세요.");

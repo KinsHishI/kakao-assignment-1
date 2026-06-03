@@ -32,12 +32,13 @@
                 <p id="counterText" class="counter" aria-label="카운터"></p>
             </div>
 
-            <!-- 일간 뷰(3번 요구사항): 선택 날짜에 해당하는 Todo만 보여준다. -->
-            <div class="day-nav" aria-label="날짜 이동">
-                <button id="prevDayBtn" class="btn" type="button">이전</button>
-                <p id="currentDateText" class="day-text" aria-live="polite"></p>
-                <button id="nextDayBtn" class="btn" type="button">다음</button>
+            <div class="week-header" aria-label="주간 뷰">
+                <button id="prevWeekBtn" class="btn" type="button">이전 주</button>
+                <p id="weekRangeText" class="week-range" aria-live="polite"></p>
+                <button id="nextWeekBtn" class="btn" type="button">다음 주</button>
             </div>
+
+            <div id="weekDays" class="week-days" aria-label="요일별 날짜 목록"></div>
 
             <!-- 상태별 필터 탭(2번 요구사항) -->
             <nav class="filters" aria-label="상태 필터">
