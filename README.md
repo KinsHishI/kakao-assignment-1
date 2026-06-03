@@ -139,3 +139,5 @@ HTML / CSS / Vanilla JS만 사용한 미니멀 Todo 웹 앱입니다.
 - 주간 날짜를 가로로 배치하는 UI 구조와 주차 이동 방식 참고
 - 날짜 클릭 시 목록을 갱신하는 이벤트 연결 방식 참고
 - 오늘 날짜 강조와 날짜별 개수 표시 스타일 구성 참고
+
+<img src="./assets/challenge-01-screenshot.png" width="800" alt="5. Todo 주간 뷰 구현하기">
