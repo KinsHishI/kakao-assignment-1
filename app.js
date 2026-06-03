@@ -145,6 +145,18 @@ function setActiveFilterTab(nextFilter) {
     });
 }
 
+function getEmptyStateMessage() {
+    if (currentFilter === "completed") {
+        return "아직 완료한 할 일이 없어요. 완료한 Todo가 생기면 여기에 표시돼요.";
+    }
+
+    if (currentFilter === "active") {
+        return "아직 진행 중인 할 일이 없어요. 새 Todo를 추가해 보세요.";
+    }
+
+    return "아직 할 일이 없어요. 새로운 Todo를 추가해 보세요.";
+}
+
 // --- 렌더링 ---
 function renderTodoList() {
     // 상태(todos) + 필터(currentFilter)를 기반으로 목록을 다시 그린다.
@@ -171,6 +183,7 @@ function renderTodoList() {
 
     const emptyState = document.getElementById("emptyState");
     if (emptyState) {
+        emptyState.textContent = getEmptyStateMessage();
         emptyState.hidden = visibleTodos.length > 0;
     }
 
