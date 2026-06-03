@@ -13,8 +13,7 @@ const STORAGE_KEY = "kakao-assignment.todos.v1";
 function saveTodosToStorage() {
     try {
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
-    } catch (error) {
-        console.warn("Failed to save todos to localStorage", error);
+    } catch {
     }
 }
 
@@ -37,8 +36,7 @@ function loadTodosFromStorage() {
                     typeof item.dateKey === "string" ? item.dateKey : selectedDateKey,
             }))
             .filter((todo) => todo.text.trim().length > 0);
-    } catch (error) {
-        console.warn("Failed to load todos from localStorage", error);
+    } catch {
         return [];
     }
 }
@@ -170,6 +168,11 @@ function renderTodoList() {
       `;
         })
         .join("");
+
+    const emptyState = document.getElementById("emptyState");
+    if (emptyState) {
+        emptyState.hidden = visibleTodos.length > 0;
+    }
 
     updateCounter();
 }

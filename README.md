@@ -111,4 +111,4 @@ HTML / CSS / Vanilla JS만 사용한 미니멀 Todo 웹 앱입니다.
 - 로컬스토리지 저장/복원 흐름을 함수로 분리하는 방식과 예외 처리 구조 참고
 - 저장 키 네이밍과 데이터 구조 정리 참고
 
-<img src="./mission-04-screenshot.png" width="800" alt="4번 미션 스크린샷">
+<img src="./mission-04-screenshot.png" width="800" alt="과제 수행 스크린샷">mission-04-screenshot

@@ -200,6 +200,16 @@ body {
     gap: 10px;
 }
 
+.empty-state {
+    margin: 14px 2px 2px;
+    padding: 14px;
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    color: var(--muted);
+    text-align: center;
+    background: rgba(255, 255, 255, 0.02);
+}
+
 .todo-item {
     display: grid;
     grid-template-columns: 1fr auto;
