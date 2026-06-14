@@ -1,3 +1,4 @@
+import os
 from typing import Optional
 
 from fastapi import Depends, FastAPI, HTTPException
@@ -8,7 +9,7 @@ from sqlalchemy import text as sql_text
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 # DB 설정
-DATABASE_URL = "sqlite:///./todos.db"
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./todos.db")
 engine = create_engine(
     DATABASE_URL,
     connect_args={"check_same_thread": False},
